@@ -693,7 +693,7 @@ private:
     if (ExistingError)
       return std::move(ExistingError);
 
-    return callB<ReadMem>(Src, Size);
+    return (Expected<std::vector<char,std::allocator<char>>>)callB<ReadMem>(Src, Size);
   }
 
   Error registerEHFrames(JITTargetAddress &RAddr, uint32_t Size) {
