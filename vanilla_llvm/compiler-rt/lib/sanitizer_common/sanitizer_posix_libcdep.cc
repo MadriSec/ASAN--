@@ -157,12 +157,14 @@ bool SupportsColoredOutput(fd_t fd) {
   return isatty(fd) != 0;
 }
 
+
 #if !SANITIZER_GO
 // TODO(glider): different tools may require different altstack size.
-static const uptr kAltStackSize = SIGSTKSZ * 4;  // SIGSTKSZ is not enough.
+static uptr kAltStackSize = (SIGSTKSZ) * 4;  // SIGSTKSZ is not enough.
 
 void SetAlternateSignalStack() {
   stack_t altstack, oldstack;
+  kAltStackSize = SIGSTKSZ * 4; /* Not properly initialized earlier */
   CHECK_EQ(0, sigaltstack(nullptr, &oldstack));
   // If the alternate stack is already in place, do nothing.
   // Android always sets an alternate stack, but it's too small for us.
@@ -181,6 +183,7 @@ void UnsetAlternateSignalStack() {
   stack_t altstack, oldstack;
   altstack.ss_sp = nullptr;
   altstack.ss_flags = SS_DISABLE;
+  kAltStackSize = SIGSTKSZ * 4; /* Not properly initialized earlier */
   altstack.ss_size = kAltStackSize;  // Some sane value required on Darwin.
   CHECK_EQ(0, sigaltstack(&altstack, &oldstack));
   UnmapOrDie(oldstack.ss_sp, oldstack.ss_size);
